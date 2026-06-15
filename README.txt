@@ -1,14 +1,15 @@
-Outfit-Rotation Web-App
+Outfit-Web-App – robuste Ein-Datei-Version
 
-Start:
 1. ZIP entpacken.
-2. index.html doppelklicken und im Browser öffnen.
-3. Auf dem iPhone: Ordner z. B. in iCloud Drive ablegen, index.html öffnen. Für Homescreen ggf. über Safari teilen > Zum Home-Bildschirm.
+2. index.html öffnen.
+3. Kalenderwoche, Wetter und optional Wunschteil eingeben.
+4. „Outfits machen“ erzeugt drei Vorschläge. „Refresh“ mischt neu.
 
-Fundus ändern:
-- Datei wardrobe.js im gleichen Ordner öffnen.
-- Teile nach dem Muster ergänzen oder active:false setzen.
-- Wichtig: Kommas zwischen den Einträgen beibehalten.
+Fundus anpassen:
+- In der App den Bereich „Fundus bearbeiten / erweitern“ öffnen.
+- JSON bearbeiten und „Fundus übernehmen“ klicken.
+- Änderungen werden lokal im Browser gespeichert.
+- Mit „Exportieren“ kannst du eine Sicherung als outfit-fundus.json speichern.
 
 Hinweis:
-Die App arbeitet lokal ohne Anmeldung und ohne Server. Sie ist als erster Prototyp gedacht.
+Diese Version nutzt keine externen JS-Dateien mehr. Dadurch funktioniert sie zuverlässiger beim lokalen Öffnen auf Mac/iPhone.

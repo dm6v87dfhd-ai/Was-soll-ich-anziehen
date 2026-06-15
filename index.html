@@ -4,44 +4,973 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Outfit-Rotation</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --bg: #f4f1eb;
+      --panel: #fffdf8;
+      --ink: #232321;
+      --muted: #6f6a62;
+      --line: #d8d0c4;
+      --soft: #e8e0d4;
+      --accent: #252b33;
+      --ok: #dfe8dd;
+      --warn: #efe2c7;
+      --shadow: 0 10px 30px rgba(30, 25, 20, .08);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f7f3ec 0%, var(--bg) 100%);
+    }
+    .app { width: min(980px, 100%); margin: 0 auto; padding: 24px 16px 48px; }
+    .hero { padding: 18px 4px 12px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
+    h1 { margin: 0; font-size: clamp(32px, 8vw, 58px); line-height: .95; letter-spacing: -.05em; }
+    .sub { max-width: 700px; color: var(--muted); font-size: 16px; line-height: 1.45; margin: 14px 0 0; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .input-panel { display: grid; gap: 14px; padding: 16px; margin-top: 16px; }
+    @media (min-width: 780px) { .input-panel { grid-template-columns: .6fr 1.3fr 1.1fr auto; align-items: end; } }
+    label { display: grid; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 650; }
+    input, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 12px;
+      background: white; color: var(--ink); font: inherit; outline: none;
+    }
+    input:focus, textarea:focus { border-color: #8b8478; box-shadow: 0 0 0 3px rgba(100,90,75,.12); }
+    .button-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      border: 0; border-radius: 999px; padding: 13px 16px; font: inherit; font-weight: 750;
+      background: var(--accent); color: #fff; cursor: pointer; min-height: 44px;
+    }
+    button.secondary { background: var(--soft); color: var(--ink); }
+    button.smallbtn { padding: 10px 13px; min-height: 38px; font-size: 14px; }
+    .hint { margin: 14px 0; min-height: 24px; color: var(--muted); line-height: 1.45; }
+    .error { background: #f7dedb; color: #5f251e; border: 1px solid #e2b9b3; border-radius: 16px; padding: 12px; margin: 12px 0; }
+    .cards { display: grid; gap: 14px; }
+    @media (min-width: 900px) { .cards { grid-template-columns: repeat(3, 1fr); align-items: start; } }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+    h2 { margin: 0 0 10px; font-size: 20px; letter-spacing: -.02em; }
+    .badges { display:flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .badge { display:inline-flex; border-radius:999px; background:var(--ok); padding: 4px 9px; font-size: 12px; color:#344033; }
+    .badge.warn { background: var(--warn); color: #5c4826; }
+    .line { display: grid; grid-template-columns: 82px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(216,208,196,.75); }
+    .label { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .value { line-height: 1.35; }
+    .why { margin-top: 12px; padding: 12px; border-radius: 15px; background: #f1ece3; color: #504b45; line-height: 1.4; font-size: 14px; }
+    details { margin-top: 16px; padding: 14px 16px; }
+    summary { cursor: pointer; font-weight: 750; }
+    .fundus-tools { display:flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    textarea { min-height: 240px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.35; }
+    code { background: #eee5d8; border-radius: 6px; padding: 2px 5px; }
+    .smallnote { color: var(--muted); font-size: 14px; line-height: 1.45; }
+  </style>
 </head>
 <body>
   <main class="app">
     <header class="hero">
       <p class="eyebrow">Smart Casual · Kleiderschrank-Rotation</p>
       <h1>Outfit-Rotation</h1>
-      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Die App schlägt drei ruhige Outfits aus deinem Fundus vor.</p>
+      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Die App schlägt drei ruhige Outfits aus deinem Fundus vor – mit T‑Shirt-Farbe, Socken, Accessoires und Parfum.</p>
     </header>
 
     <section class="panel input-panel" aria-label="Eingabe">
-      <label>
-        Kalenderwoche
+      <label>Kalenderwoche
         <input id="week" type="number" min="1" max="53" inputmode="numeric" placeholder="z. B. 25" />
       </label>
-      <label>
-        Wetter / Temperatur
+      <label>Wetter / Temperatur
         <input id="weather" type="text" placeholder="z. B. 21 Grad, Sonne/Wolken, Regen möglich" />
       </label>
-      <label>
-        Wunschteil optional
+      <label>Wunschteil optional
         <input id="wish" type="text" placeholder="z. B. petrol Cordhemd oder leer lassen" />
       </label>
       <div class="button-row">
-        <button id="generate">Outfits machen</button>
-        <button id="refresh" class="secondary">Refresh</button>
+        <button id="generate" type="button">Outfits machen</button>
+        <button id="refresh" type="button" class="secondary">Refresh</button>
       </div>
     </section>
 
     <section class="hint" id="hint"></section>
+    <section id="error"></section>
     <section class="cards" id="cards" aria-live="polite"></section>
 
-    <details class="panel small">
-      <summary>Fundus am Mac anpassen</summary>
-      <p>Öffne die Datei <strong>wardrobe.js</strong> im gleichen Ordner. Neue Teile einfach nach dem vorhandenen Muster ergänzen. Teile, die nicht genutzt werden sollen, mit <code>active:false</code> deaktivieren.</p>
+    <details class="panel">
+      <summary>Fundus bearbeiten / erweitern</summary>
+      <p class="smallnote">Du kannst den Fundus direkt hier bearbeiten. Am Mac ist das meist am einfachsten: Eintrag kopieren, Namen/Farbe/Kategorie ändern, dann <strong>Fundus übernehmen</strong>. Gespeichert wird lokal im Browser. Mit <strong>Exportieren</strong> bekommst du eine JSON-Datei als Sicherung.</p>
+      <div class="fundus-tools">
+        <button type="button" class="smallbtn" id="saveWardrobe">Fundus übernehmen</button>
+        <button type="button" class="smallbtn secondary" id="exportWardrobe">Exportieren</button>
+        <button type="button" class="smallbtn secondary" id="resetWardrobe">Auf Standard zurücksetzen</button>
+      </div>
+      <textarea id="wardrobeEditor" spellcheck="false"></textarea>
+      <p class="smallnote">Kategorien: <code>Hose</code>, <code>Tshirt</code>, <code>Longsleeve</code>, <code>Hemd</code>, <code>Pullover</code>, <code>Overshirt</code>, <code>Blazer</code>, <code>Cardigan</code>, <code>Jacke</code>, <code>Weste</code>, <code>Schuhe</code>, <code>Kappe</code>, <code>Mütze</code>, <code>Schal</code>, <code>Uhr</code>. Nicht nutzen: <code>"active": false</code>.</p>
     </details>
   </main>
-  <script src="wardrobe.js"></script>
-  <script src="app.js"></script>
+
+  <script>
+    const DEFAULT_WARDROBE = [
+  {
+    "name": "schwarze Stoffhose",
+    "category": "Hose",
+    "color": "schwarz",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weites Bein",
+    "material": "Canvas",
+    "active": true
+  },
+  {
+    "name": "grauer Pullover",
+    "category": "Pullover",
+    "color": "grau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Sweatstoff",
+    "active": true
+  },
+  {
+    "name": "schwarzer Pullover",
+    "category": "Pullover",
+    "color": "schwarz",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Sweatstoff",
+    "active": true
+  },
+  {
+    "name": "blauer Strickkapuzenpullover",
+    "category": "Pullover",
+    "color": "dunkelblau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Kaschmir-Strick",
+    "active": true,
+    "notes": "nur Winter/kalter Herbst bevorzugt"
+  },
+  {
+    "name": "hellblaues Longsleeve",
+    "category": "Longsleeve",
+    "color": "eisblau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "dunkelblaues Longsleeve",
+    "category": "Longsleeve",
+    "color": "dunkelblau",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "waldgrünes T-Shirt",
+    "category": "Tshirt",
+    "color": "dunkles waldgrün",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "polar blue T-Shirt",
+    "category": "Tshirt",
+    "color": "ice blau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "lava graues T-Shirt",
+    "category": "Tshirt",
+    "color": "lava grau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "schwarzes T-Shirt",
+    "category": "Tshirt",
+    "color": "schwarz",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "pinkes T-Shirt",
+    "category": "Tshirt",
+    "color": "pastell beere",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "gelbes T-Shirt",
+    "category": "Tshirt",
+    "color": "pastell gelb",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "olivegrünes T-Shirt",
+    "category": "Tshirt",
+    "color": "olivegrün",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "weißes T-Shirt",
+    "category": "Tshirt",
+    "color": "weiß",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "bordeauxrotes T-Shirt",
+    "category": "Tshirt",
+    "color": "bordeauxrot",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "graublaues T-Shirt",
+    "category": "Tshirt",
+    "color": "graublau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "navy T-Shirt",
+    "category": "Tshirt",
+    "color": "navy",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Baumwolle",
+    "active": true
+  },
+  {
+    "name": "Jeans",
+    "category": "Hose",
+    "color": "jeansblau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Jeans",
+    "active": true
+  },
+  {
+    "name": "beige Stoffhose",
+    "category": "Hose",
+    "color": "beige",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weites Bein",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "grüne Stoffhose",
+    "category": "Hose",
+    "color": "olivegrün",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weites Bein",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "grüne Corthose",
+    "category": "Hose",
+    "color": "grüngrau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Cord",
+    "active": true
+  },
+  {
+    "name": "off-white/pinke Batikjeans",
+    "category": "Hose",
+    "color": "off-white beige mit pinkem Batikmuster",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Jeans",
+    "active": true
+  },
+  {
+    "name": "blaue Leinenhose",
+    "category": "Hose",
+    "color": "navy",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Leinen",
+    "active": true
+  },
+  {
+    "name": "blaue Stoffhose",
+    "category": "Hose",
+    "color": "navy",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "-",
+    "active": true,
+    "avoidFor": "Termin"
+  },
+  {
+    "name": "hellblaues Hemd mit Streifen",
+    "category": "Hemd",
+    "color": "hellblau mit feinen hellrot/grünen Streifen",
+    "warmth": "leicht",
+    "formality": "business",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "weißes Hemd",
+    "category": "Hemd",
+    "color": "weiß",
+    "warmth": "leicht",
+    "formality": "business",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "blau weiß gestreiftes Hemd",
+    "category": "Hemd",
+    "color": "royalblau/weiß",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "Carhartt Hemd",
+    "category": "Hemd",
+    "color": "grau weiß",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "fest",
+    "active": true
+  },
+  {
+    "name": "hellblaues Hemd",
+    "category": "Hemd",
+    "color": "hellblau",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "hellblaues kurzes Leinenhemd",
+    "category": "Hemd",
+    "color": "hellblau",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Leinen",
+    "active": true
+  },
+  {
+    "name": "blaues Hemd",
+    "category": "Hemd",
+    "color": "navy",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "kariertes Flanellhemd",
+    "category": "Hemd",
+    "color": "olivegrün/gelb",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "oversized",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "französische Arbeitsjacke",
+    "category": "Overshirt",
+    "color": "knallblau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Jeans",
+    "active": true
+  },
+  {
+    "name": "Cargojacke",
+    "category": "Overshirt",
+    "color": "navy",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "brauner Wollblazer",
+    "category": "Blazer",
+    "color": "braun",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "oversized",
+    "material": "Wolle",
+    "active": true
+  },
+  {
+    "name": "blaue Wollwalkjacke",
+    "category": "Cardigan",
+    "color": "navy",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Wolle",
+    "active": true
+  },
+  {
+    "name": "hellblaues Wollhemd",
+    "category": "Hemd",
+    "color": "hellblau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "petrol Cordhemd",
+    "category": "Hemd",
+    "color": "petrol",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "Cord",
+    "active": true
+  },
+  {
+    "name": "helle Leinenjacke",
+    "category": "Overshirt",
+    "color": "naturleinen",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "Leinen",
+    "active": true
+  },
+  {
+    "name": "Wildlederjacke",
+    "category": "Jacke",
+    "color": "caramel",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "weit",
+    "material": "Leder",
+    "active": true
+  },
+  {
+    "name": "schwarze Daunenjacke",
+    "category": "Jacke",
+    "color": "schwarz",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "schwarze Regenjacke",
+    "category": "Jacke",
+    "color": "schwarz",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "slimfit",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "schwarze Steppweste",
+    "category": "Weste",
+    "color": "schwarz",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "dunkelblaue Stoffsommerjacke",
+    "category": "Jacke",
+    "color": "dunkelblau",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "regular",
+    "material": "Baumwolle",
+    "active": true,
+    "notes": "nur draußen"
+  },
+  {
+    "name": "Lederschuhe",
+    "category": "Schuhe",
+    "color": "caramel",
+    "warmth": "-",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Leder",
+    "active": true
+  },
+  {
+    "name": "weiße Sneaker",
+    "category": "Schuhe",
+    "color": "weiß",
+    "warmth": "-",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Leder",
+    "active": true
+  },
+  {
+    "name": "dunkelgrüne Sneaker",
+    "category": "Schuhe",
+    "color": "dunkelgrün",
+    "warmth": "-",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Stoff",
+    "active": true
+  },
+  {
+    "name": "helle hohe Sneaker",
+    "category": "Schuhe",
+    "color": "hellgrau mit neongelb",
+    "warmth": "-",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "schwarze Adidas Gazelle",
+    "category": "Schuhe",
+    "color": "schwarz",
+    "warmth": "-",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "schwarze Kappe",
+    "category": "Kappe",
+    "color": "schwarz",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "grüne Kappe",
+    "category": "Kappe",
+    "color": "grüngrau",
+    "warmth": "leicht",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "grüne Wollmütze",
+    "category": "Mütze",
+    "color": "grün",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "graurote Wollmütze",
+    "category": "Mütze",
+    "color": "grau mit rot",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "Uhr silber schwarzes Band",
+    "category": "Uhr",
+    "color": "schwarz",
+    "warmth": "-",
+    "formality": "-",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "Uhr silber/gold blaues Band",
+    "category": "Uhr",
+    "color": "blau",
+    "warmth": "-",
+    "formality": "-",
+    "fit": "-",
+    "material": "-",
+    "active": true
+  },
+  {
+    "name": "hellgrauer Schal",
+    "category": "Schal",
+    "color": "hellgrau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Wolle",
+    "active": true
+  },
+  {
+    "name": "dunkelblauer Schal",
+    "category": "Schal",
+    "color": "dunkelblau",
+    "warmth": "warm",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Wolle",
+    "active": true
+  },
+  {
+    "name": "dunkelblauer Sofiskarf",
+    "category": "Schal",
+    "color": "dunkelblau",
+    "warmth": "mittel",
+    "formality": "casual",
+    "fit": "-",
+    "material": "Wolle",
+    "active": true
+  }
+];
+
+    const $ = (id) => document.getElementById(id);
+    let refreshCount = 0;
+    let wardrobe = [];
+
+    const perfumes = [
+      { name:'Carthusia Essence of the Park', temp:'mild', vibe:'weich-luftig, ruhig, warm genug' },
+      { name:'Carthusia Uomo EDP', temp:'mild', vibe:'klar, gepflegt, smart casual' },
+      { name:'Roberto Ugolini Blue Suede Shoes', temp:'mild', vibe:'sauber, präsent, bürotauglich' },
+      { name:'L’Erbolario Ginepro Nero', temp:'cool', vibe:'ruhig würzig, guter Drydown' },
+      { name:'Diptyque Eau Duelle', temp:'cool', vibe:'trocken-cremig, warm, weich' },
+      { name:'Carthusia Terra Mia', temp:'cool', vibe:'warm, rund, beruhigend' },
+      { name:'Hermès Terre d’Hermès Eau Givrée', temp:'warm', vibe:'klar und frisch, nur für wärmere Tage' },
+      { name:'Jo Malone Orange Bitters', temp:'cool', vibe:'zitrisch-warm, ruhig festlich' },
+      { name:'Chanel Bleu de Chanel EDP', temp:'mild', vibe:'sicher, sauber, etwas formeller' }
+    ];
+
+    function safeStorageGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+    function safeStorageSet(key, value) { try { localStorage.setItem(key, value); } catch(e) { /* ignored */ } }
+    function showError(msg) { $('error').innerHTML = msg ? `<div class="error">${escapeHtml(msg)}</div>` : ''; }
+    function escapeHtml(str) { return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s])); }
+
+    function loadWardrobe() {
+      const stored = safeStorageGet('outfitWardrobeV2');
+      if (stored) {
+        try { wardrobe = JSON.parse(stored); }
+        catch(e) { wardrobe = DEFAULT_WARDROBE.slice(); showError('Gespeicherter Fundus war nicht lesbar. Standard-Fundus geladen.'); }
+      } else {
+        wardrobe = DEFAULT_WARDROBE.slice();
+      }
+      $('wardrobeEditor').value = JSON.stringify(wardrobe, null, 2);
+    }
+
+    function saveWardrobeFromEditor() {
+      try {
+        const parsed = JSON.parse($('wardrobeEditor').value);
+        if (!Array.isArray(parsed)) throw new Error('Der Fundus muss eine Liste in eckigen Klammern sein.');
+        wardrobe = parsed;
+        safeStorageSet('outfitWardrobeV2', JSON.stringify(wardrobe));
+        showError('');
+        refreshCount++;
+        generate();
+        $('hint').innerHTML += ' Fundus wurde übernommen.';
+      } catch (e) {
+        showError('Fundus konnte nicht übernommen werden: ' + e.message);
+      }
+    }
+
+    function exportWardrobe() {
+      const blob = new Blob([JSON.stringify(wardrobe, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'outfit-fundus.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 500);
+    }
+
+    function resetWardrobe() {
+      wardrobe = DEFAULT_WARDROBE.slice();
+      safeStorageSet('outfitWardrobeV2', JSON.stringify(wardrobe));
+      $('wardrobeEditor').value = JSON.stringify(wardrobe, null, 2);
+      refreshCount++;
+      showError('');
+      generate();
+    }
+
+    function getWeekNumber(d = new Date()) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function hash(str) {
+      let h = 2166136261;
+      for (let i=0; i<str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h += (h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24);
+      }
+      return h >>> 0;
+    }
+    function rng(seed) { let s = seed >>> 0; return () => { s = (s*1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+    function activeItems() { return wardrobe.filter(x => x && x.active !== false); }
+    function byCat(cat) { return activeItems().filter(x => x.category === cat); }
+    function clean(str) { return String(str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function tempFromWeather(txt) { const m = String(txt || '').match(/-?\d+/); return m ? parseInt(m[0], 10) : 20; }
+    function hasRain(txt) { return /regen|schauer|nass|gewitter|niesel/i.test(txt || ''); }
+    function hasTermin(txt) { return /büro|buero|termin|meeting|praesenz|präsenz|kunde|intern/i.test(txt || ''); }
+    function weatherMode(temp) { if (temp <= 8) return 'cold'; if (temp <= 16) return 'cool'; if (temp <= 22) return 'mild'; return 'warm'; }
+
+    function itemIsOkay(item, temp, context) {
+      if (!item) return false;
+      if (context.termin && item.avoidFor && clean(item.avoidFor).includes('termin')) return false;
+      if (item.name === 'blauer Strickkapuzenpullover' && temp > 10 && !/winter|kalt|herbst/i.test(context.weather)) return false;
+      return true;
+    }
+
+    function warmthAllowed(item, temp, context) {
+      if (!itemIsOkay(item, temp, context)) return false;
+      if (item.category === 'Schuhe' || item.category === 'Uhr') return true;
+      if (item.category === 'Tshirt') return temp >= 13; // T-Shirts sind auch bei warmem Wetter erlaubt, egal ob im Fundus „mittel“ steht.
+      if (item.category === 'Kappe') return temp >= 10;
+      if (item.category === 'Mütze' || item.category === 'Schal') return temp <= 14;
+      const w = item.warmth || '-';
+      if (temp <= 8) return ['warm','mittel','-'].includes(w);
+      if (temp <= 16) return ['warm','mittel','leicht','-'].includes(w);
+      if (temp <= 22) return ['mittel','leicht','-'].includes(w);
+      return ['leicht','mittel','-'].includes(w) && !['Pullover','Cardigan','Blazer','Weste'].includes(item.category);
+    }
+
+    function filtered(cat, temp, context) {
+      const strict = byCat(cat).filter(x => warmthAllowed(x, temp, context));
+      if (strict.length) return strict;
+      return byCat(cat).filter(x => itemIsOkay(x, temp, context));
+    }
+
+    function pick(list, rand, avoidNames = []) {
+      const pool = list.filter(x => x && !avoidNames.includes(x.name));
+      if (pool.length) return pool[Math.floor(rand() * pool.length)];
+      const fallback = list.filter(Boolean);
+      return fallback.length ? fallback[Math.floor(rand() * fallback.length)] : null;
+    }
+
+    function findWish(text) {
+      const q = clean(text).trim();
+      if (!q) return null;
+      return activeItems().find(x => clean(x.name).includes(q) || clean(x.color).includes(q));
+    }
+
+    function socksFor(outfit) {
+      const names = Object.values(outfit).filter(v => v && typeof v === 'object' && v.name).map(x => `${x.name} ${x.color || ''}`).join(' ').toLowerCase();
+      if (names.includes('navy') || names.includes('dunkelblau')) return 'dunkelblaue Socken';
+      if (names.includes('schwarz')) return 'schwarze Socken';
+      if (names.includes('beige') || names.includes('natur') || names.includes('caramel')) return 'hellgraue oder dunkelblaue Socken';
+      if (names.includes('olive') || names.includes('grün')) return 'dunkelblaue oder anthrazitfarbene Socken';
+      return 'mittelgraue Socken';
+    }
+
+    function colorStory(items) {
+      const colors = items.filter(Boolean).map(x => `${x.name} ${x.color || ''}`).join(', ');
+      if (/ice|hellblau|graublau|navy|dunkelblau|grau|schwarz|weiß|petrol/i.test(colors)) return 'Farbstory: kühle, ruhige Basis – passend zu kaltem Hauttyp und Glatze; klar statt hart.';
+      if (/olive|grün|wald|caramel|braun|beige|natur/i.test(colors)) return 'Farbstory: erdiger Akzent auf ruhiger Basis; mit kühler T‑Shirt-Farbe ausgeglichen.';
+      if (/pink|beere|bordeaux/i.test(colors)) return 'Farbstory: gedämpfter Farbakzent, nicht laut; mit Navy/Grau/Schwarz beruhigt.';
+      return 'Farbstory: reduzierte Basis mit kleinem Akzent – ruhig, alltagstauglich, nicht überladen.';
+    }
+
+    function perfumeFor(temp, rand, context) {
+      const mode = weatherMode(temp);
+      let pool = perfumes.filter(p => {
+        if (p.name.includes('Eau Givrée')) return temp >= 22;
+        if (mode === 'warm') return ['warm','mild'].includes(p.temp);
+        if (mode === 'mild') return p.temp !== 'warm';
+        return p.temp === 'cool' || p.temp === 'mild';
+      });
+      if (context.termin) pool = pool.filter(p => !p.name.includes('Terra Mia') || temp <= 14);
+      return pick(pool.length ? pool : perfumes, rand) || perfumes[0];
+    }
+
+    function chooseBase(i, rand, temp, context, wish, used) {
+      const mode = weatherMode(temp);
+      const wishCat = wish ? wish.category : '';
+      const outfit = { pants:null, tshirt:null, top:null, layer:null, shoes:null, head:null, scarf:null, watch:null, perfume:null };
+
+      outfit.pants = wishCat === 'Hose' ? wish : pick(filtered('Hose', temp, context), rand, used);
+      outfit.tshirt = wishCat === 'Tshirt' ? wish : pick(filtered('Tshirt', temp, context), rand, used);
+
+      if (['Hemd','Pullover','Longsleeve'].includes(wishCat)) outfit.top = wish;
+      if (['Overshirt','Blazer','Cardigan','Weste','Jacke'].includes(wishCat)) outfit.layer = wish;
+      if (wishCat === 'Schuhe') outfit.shoes = wish;
+
+      if (!outfit.top) {
+        let templateCats;
+        if (mode === 'warm') templateCats = i === 2 ? ['Hemd','Tshirt'] : ['Tshirt','Hemd'];
+        else if (mode === 'mild') templateCats = i === 0 ? ['Tshirt','Longsleeve'] : i === 1 ? ['Longsleeve','Tshirt'] : ['Hemd','Tshirt'];
+        else templateCats = i === 0 ? ['Longsleeve','Pullover'] : i === 1 ? ['Pullover','Longsleeve'] : ['Hemd','Longsleeve'];
+        const cat = templateCats[Math.floor(rand() * templateCats.length)];
+        outfit.top = cat === 'Tshirt' ? outfit.tshirt : pick(filtered(cat, temp, context), rand, used);
+      }
+
+      if (outfit.top && outfit.top.category === 'Tshirt') outfit.tshirt = outfit.top;
+      if (!outfit.tshirt) outfit.tshirt = pick(filtered('Tshirt', temp, context), rand, used) || pick(byCat('Tshirt'), rand, []);
+
+      if (!outfit.layer) {
+        let layerCats;
+        if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt'];
+        else if (temp >= 18) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt','Jacke'];
+        else if (temp >= 11) layerCats = ['Overshirt','Cardigan','Blazer','Weste','Jacke'];
+        else layerCats = ['Cardigan','Blazer','Weste','Jacke'];
+        const cat = layerCats[(i + Math.floor(rand()*layerCats.length)) % layerCats.length];
+        outfit.layer = pick(filtered(cat, temp, context), rand, used);
+      }
+
+      if (context.rain) {
+        outfit.layer = pick(byCat('Jacke').filter(x => /regenjacke/i.test(x.name)), rand) || outfit.layer;
+      }
+      if (outfit.layer && outfit.layer.name === 'dunkelblaue Stoffsommerjacke') {
+        outfit.layerNote = 'nur draußen als Außenlage gedacht';
+      }
+
+      outfit.shoes = outfit.shoes || pick(byCat('Schuhe'), rand, used);
+      outfit.head = temp <= 10 ? pick(byCat('Mütze'), rand) : pick(byCat('Kappe'), rand);
+      outfit.scarf = temp <= 14 ? pick(filtered('Schal', temp, context), rand) : null;
+      outfit.watch = pick(byCat('Uhr'), rand);
+      outfit.perfume = perfumeFor(temp, rand, context);
+
+      [outfit.pants, outfit.tshirt, outfit.top, outfit.layer, outfit.shoes].filter(Boolean).forEach(x => used.push(x.name));
+      return outfit;
+    }
+
+    function itemText(item) { return item ? `${escapeHtml(item.name)} (${escapeHtml(item.color || '-')})` : '—'; }
+
+    function renderCard(outfit, idx) {
+      const title = ['Ruhige Basis','Etwas mehr Akzent','Bequeme Rotation'][idx] || `Option ${idx+1}`;
+      let topText;
+      if (outfit.top && outfit.top.category === 'Hemd') {
+        topText = `${itemText(outfit.top)}<br><strong>T‑Shirt darunter:</strong> ${itemText(outfit.tshirt)}`;
+      } else if (outfit.top) {
+        topText = `${itemText(outfit.top)}<br><strong>T‑Shirt-Farbe:</strong> ${escapeHtml(outfit.tshirt ? outfit.tshirt.color : 'nicht gefunden')}`;
+      } else {
+        topText = itemText(outfit.tshirt);
+      }
+      const layerText = outfit.layer ? `${itemText(outfit.layer)}${outfit.layerNote ? ' · ' + escapeHtml(outfit.layerNote) : ''}` : 'kein zusätzlicher Layer';
+      const acc = [outfit.watch && outfit.watch.name, outfit.head && outfit.head.name, outfit.scarf && outfit.scarf.name].filter(Boolean).map(escapeHtml).join(' · ');
+      const perfume = outfit.perfume || perfumes[0];
+      return `<article class="card">
+        <h2>Option ${idx+1}: ${escapeHtml(title)}</h2>
+        <div class="badges"><span class="badge">warm genug</span><span class="badge">minimal</span><span class="badge">KW‑Rotation</span></div>
+        <div class="line"><div class="label">Hose</div><div class="value">${itemText(outfit.pants)}</div></div>
+        <div class="line"><div class="label">Oben</div><div class="value">${topText}</div></div>
+        <div class="line"><div class="label">Layer</div><div class="value">${layerText}</div></div>
+        <div class="line"><div class="label">Schuhe</div><div class="value">${itemText(outfit.shoes)}</div></div>
+        <div class="line"><div class="label">Socken</div><div class="value">${escapeHtml(socksFor(outfit))}</div></div>
+        <div class="line"><div class="label">Accessoires</div><div class="value">${acc || 'reduziert, ohne zusätzliches Accessoire'}</div></div>
+        <div class="line"><div class="label">Parfum</div><div class="value">${escapeHtml(perfume.name)} – ${escapeHtml(perfume.vibe)}</div></div>
+        <div class="why">${escapeHtml(colorStory([outfit.pants, outfit.tshirt, outfit.top, outfit.layer, outfit.shoes]))}</div>
+      </article>`;
+    }
+
+    function generate() {
+      try {
+        showError('');
+        const week = $('week').value || getWeekNumber();
+        const weather = $('weather').value || '';
+        const wishText = $('wish').value || '';
+        const temp = tempFromWeather(weather);
+        const context = { weather, rain: hasRain(weather), termin: hasTermin(weather) };
+        const wish = findWish(wishText);
+        const seed = hash(`${week}|${weather}|${wishText}|${refreshCount}|${wardrobe.length}`);
+        const rand = rng(seed);
+        const used = [];
+        const cards = [0,1,2].map(i => chooseBase(i, rand, temp, context, wish, used));
+        const recognized = weather ? `Erkannt: ca. <strong>${temp} °C</strong>${context.rain ? ', Regen berücksichtigt' : ''}${context.termin ? ', Termin/Büro-Modus aus Text abgeleitet' : ''}.` : 'Keine Temperatur erkannt – die App rechnet neutral mit ca. 20 °C.';
+        const wishInfo = wishText ? (wish ? `Wunschteil gefunden: <strong>${escapeHtml(wish.name)}</strong>.` : 'Wunschteil nicht eindeutig gefunden – Vorschläge trotzdem erstellt.') : 'Ohne Wunschteil erstellt.';
+        $('hint').innerHTML = `${recognized} ${wishInfo}`;
+        $('cards').innerHTML = cards.map((c,i) => renderCard(c,i)).join('');
+      } catch (e) {
+        console.error(e);
+        showError('Die App ist in einen Fehler gelaufen: ' + e.message);
+      }
+    }
+
+    function init() {
+      $('week').value = getWeekNumber();
+      loadWardrobe();
+      $('generate').addEventListener('click', () => { refreshCount = 0; generate(); });
+      $('refresh').addEventListener('click', () => { refreshCount++; generate(); });
+      $('saveWardrobe').addEventListener('click', saveWardrobeFromEditor);
+      $('exportWardrobe').addEventListener('click', exportWardrobe);
+      $('resetWardrobe').addEventListener('click', resetWardrobe);
+      generate();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  </script>
 </body>
 </html>
