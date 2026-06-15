@@ -3,67 +3,82 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Outfit-Rotation</title>
+  <title>Outfit Rotation</title>
   <style>
     :root {
-      --bg: #f4f1eb;
-      --panel: #fffdf8;
-      --ink: #232321;
-      --muted: #6f6a62;
-      --line: #d8d0c4;
-      --soft: #e8e0d4;
-      --accent: #252b33;
-      --ok: #dfe8dd;
-      --warn: #efe2c7;
-      --shadow: 0 10px 30px rgba(30, 25, 20, .08);
-      --radius: 20px;
+      --bg: #f5f5f7;
+      --panel: rgba(255, 255, 255, .82);
+      --panel-solid: #ffffff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0, 0, 0, .10);
+      --soft: #e9e9ed;
+      --accent: #1d1d1f;
+      --ok: #eaf3ee;
+      --warn: #f6efe2;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .08);
+      --radius: 24px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
       color: var(--ink);
-      background: linear-gradient(180deg, #f7f3ec 0%, var(--bg) 100%);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,.95), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #fbfbfd 0%, var(--bg) 100%);
+      -webkit-font-smoothing: antialiased;
     }
-    .app { width: min(980px, 100%); margin: 0 auto; padding: 24px 16px 48px; }
-    .hero { padding: 18px 4px 12px; }
-    .eyebrow { margin: 0 0 8px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
-    h1 { margin: 0; font-size: clamp(32px, 8vw, 58px); line-height: .95; letter-spacing: -.05em; }
-    .sub { max-width: 700px; color: var(--muted); font-size: 16px; line-height: 1.45; margin: 14px 0 0; }
-    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .app { width: min(1040px, 100%); margin: 0 auto; padding: 26px 16px 52px; }
+    .hero { padding: 22px 4px 14px; }
+    .eyebrow { margin: 0 0 9px; color: var(--muted); letter-spacing: .10em; text-transform: uppercase; font-size: 11px; font-weight: 700; }
+    h1 { margin: 0; font-size: clamp(34px, 8vw, 62px); line-height: .94; letter-spacing: -.055em; font-weight: 780; }
+    .sub { max-width: 720px; color: var(--muted); font-size: 16px; line-height: 1.48; margin: 14px 0 0; }
+    .panel, .history-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
     .input-panel { display: grid; gap: 14px; padding: 16px; margin-top: 16px; }
-    @media (min-width: 780px) { .input-panel { grid-template-columns: .6fr 1.3fr 1.1fr auto; align-items: end; } }
+    @media (min-width: 780px) { .input-panel { grid-template-columns: .55fr 1.25fr 1.1fr auto; align-items: end; } }
     label { display: grid; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 650; }
     input, textarea {
-      width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 12px;
-      background: white; color: var(--ink); font: inherit; outline: none;
+      width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 13px 13px;
+      background: rgba(255,255,255,.86); color: var(--ink); font: inherit; font-size: 16px; outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
     }
-    input:focus, textarea:focus { border-color: #8b8478; box-shadow: 0 0 0 3px rgba(100,90,75,.12); }
+    input:focus, textarea:focus { border-color: rgba(0,0,0,.35); box-shadow: 0 0 0 4px rgba(0,0,0,.07); background: white; }
     .button-row { display: flex; gap: 10px; flex-wrap: wrap; }
     button {
-      border: 0; border-radius: 999px; padding: 13px 16px; font: inherit; font-weight: 750;
+      border: 0; border-radius: 999px; padding: 13px 17px; font: inherit; font-weight: 750;
       background: var(--accent); color: #fff; cursor: pointer; min-height: 44px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.10); transition: transform .12s ease, opacity .12s ease, box-shadow .12s ease;
     }
-    button.secondary { background: var(--soft); color: var(--ink); }
+    button:active { transform: scale(.985); box-shadow: 0 4px 12px rgba(0,0,0,.10); }
+    button.secondary { background: var(--soft); color: var(--ink); box-shadow: none; }
     button.smallbtn { padding: 10px 13px; min-height: 38px; font-size: 14px; }
-    .hint { margin: 14px 0; min-height: 24px; color: var(--muted); line-height: 1.45; }
-    .error { background: #f7dedb; color: #5f251e; border: 1px solid #e2b9b3; border-radius: 16px; padding: 12px; margin: 12px 0; }
+    button.choose { width: 100%; margin-top: 14px; background: #f2f2f5; color: var(--ink); box-shadow: none; }
+    button.choose.primary { background: var(--accent); color: white; box-shadow: 0 8px 20px rgba(0,0,0,.10); }
+    .hint { margin: 14px 2px; min-height: 24px; color: var(--muted); line-height: 1.45; font-size: 15px; }
+    .error { background: #fff1f0; color: #7b2118; border: 1px solid #f1c6c1; border-radius: 18px; padding: 12px; margin: 12px 0; }
     .cards { display: grid; gap: 14px; }
     @media (min-width: 900px) { .cards { grid-template-columns: repeat(3, 1fr); align-items: start; } }
-    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
-    h2 { margin: 0 0 10px; font-size: 20px; letter-spacing: -.02em; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    h2 { margin: 0 0 10px; font-size: 20px; letter-spacing: -.025em; font-weight: 760; }
     .badges { display:flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .badge { display:inline-flex; border-radius:999px; background:var(--ok); padding: 4px 9px; font-size: 12px; color:#344033; }
-    .badge.warn { background: var(--warn); color: #5c4826; }
-    .line { display: grid; grid-template-columns: 82px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(216,208,196,.75); }
+    .badge { display:inline-flex; border-radius:999px; background:var(--ok); padding: 5px 9px; font-size: 12px; color:#2f4537; }
+    .badge.warn { background: var(--warn); color: #6a4d19; }
+    .line { display: grid; grid-template-columns: 82px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(0,0,0,.075); }
     .label { color: var(--muted); font-size: 13px; font-weight: 700; }
     .value { line-height: 1.35; }
-    .why { margin-top: 12px; padding: 12px; border-radius: 15px; background: #f1ece3; color: #504b45; line-height: 1.4; font-size: 14px; }
+    .why { margin-top: 12px; padding: 12px; border-radius: 17px; background: rgba(242,242,247,.86); color: #4b4b50; line-height: 1.4; font-size: 14px; }
+    .history-panel { margin-top: 16px; padding: 14px 16px; }
+    .history-head { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 8px; }
+    .history-head h2 { margin: 0; font-size: 17px; }
+    .history-list { display: grid; gap: 8px; margin-top: 8px; }
+    .history-item { border-top: 1px solid rgba(0,0,0,.075); padding-top: 9px; color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .history-item strong { color: var(--ink); }
     details { margin-top: 16px; padding: 14px 16px; }
     summary { cursor: pointer; font-weight: 750; }
     .fundus-tools { display:flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
     textarea { min-height: 240px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.35; }
-    code { background: #eee5d8; border-radius: 6px; padding: 2px 5px; }
+    code { background: #eeeeF2; border-radius: 6px; padding: 2px 5px; }
     .smallnote { color: var(--muted); font-size: 14px; line-height: 1.45; }
   </style>
 </head>
@@ -72,7 +87,7 @@
     <header class="hero">
       <p class="eyebrow">Smart Casual · Kleiderschrank-Rotation</p>
       <h1>Outfit-Rotation</h1>
-      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Die App schlägt drei ruhige Outfits aus deinem Fundus vor – mit T‑Shirt-Farbe, Socken, Accessoires und Parfum.</p>
+      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Gewählte Outfits werden lokal gemerkt, damit die Woche nicht dauernd gleich aussieht – mit T‑Shirt-Farbe, Socken, Accessoires und Parfum.</p>
     </header>
 
     <section class="panel input-panel" aria-label="Eingabe">
@@ -94,6 +109,8 @@
     <section class="hint" id="hint"></section>
     <section id="error"></section>
     <section class="cards" id="cards" aria-live="polite"></section>
+
+    <section class="history-panel" id="historyPanel" aria-label="Gewählte Outfits"></section>
 
     <details class="panel">
       <summary>Fundus bearbeiten / erweitern</summary>
@@ -698,6 +715,10 @@
     const $ = (id) => document.getElementById(id);
     let refreshCount = 0;
     let wardrobe = [];
+    let choiceHistory = [];
+    let currentOutfits = [];
+    const HISTORY_KEY = 'outfitChoiceHistoryV1';
+    const HISTORY_DAYS = 7;
 
     const perfumes = [
       { name:'Carthusia Essence of the Park', temp:'mild', vibe:'weich-luftig, ruhig, warm genug' },
@@ -713,6 +734,7 @@
 
     function safeStorageGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
     function safeStorageSet(key, value) { try { localStorage.setItem(key, value); } catch(e) { /* ignored */ } }
+    function safeStorageRemove(key) { try { localStorage.removeItem(key); } catch(e) { /* ignored */ } }
     function showError(msg) { $('error').innerHTML = msg ? `<div class="error">${escapeHtml(msg)}</div>` : ''; }
     function escapeHtml(str) { return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s])); }
 
@@ -725,6 +747,101 @@
         wardrobe = DEFAULT_WARDROBE.slice();
       }
       $('wardrobeEditor').value = JSON.stringify(wardrobe, null, 2);
+    }
+
+    function loadChoiceHistory() {
+      const stored = safeStorageGet(HISTORY_KEY);
+      if (!stored) { choiceHistory = []; return; }
+      try {
+        const parsed = JSON.parse(stored);
+        choiceHistory = Array.isArray(parsed) ? parsed : [];
+      } catch(e) {
+        choiceHistory = [];
+      }
+      pruneChoiceHistory();
+    }
+
+    function saveChoiceHistory() {
+      pruneChoiceHistory();
+      safeStorageSet(HISTORY_KEY, JSON.stringify(choiceHistory));
+    }
+
+    function pruneChoiceHistory() {
+      const cutoff = Date.now() - HISTORY_DAYS * 24 * 60 * 60 * 1000;
+      choiceHistory = choiceHistory.filter(x => x && x.timestamp && new Date(x.timestamp).getTime() >= cutoff).slice(0, 24);
+    }
+
+    function clearChoiceHistory() {
+      choiceHistory = [];
+      safeStorageRemove(HISTORY_KEY);
+      refreshCount++;
+      renderHistory();
+      generate();
+    }
+
+    function outfitItems(outfit) {
+      if (!outfit) return [];
+      return [outfit.pants, outfit.tshirt, outfit.top, outfit.layer, outfit.shoes]
+        .filter(Boolean)
+        .filter((item, index, arr) => arr.findIndex(x => x.name === item.name) === index);
+    }
+
+    function outfitSignature(outfit) {
+      return outfitItems(outfit).map(x => clean(x.name)).sort().join('|');
+    }
+
+    function recentAvoidNames() {
+      pruneChoiceHistory();
+      const names = [];
+      choiceHistory.forEach(entry => {
+        (entry.items || []).forEach(name => { if (name && !names.includes(name)) names.push(name); });
+      });
+      return names;
+    }
+
+    function recentSignatures() {
+      pruneChoiceHistory();
+      return choiceHistory.map(x => x.signature).filter(Boolean);
+    }
+
+    function markChosen(index) {
+      const outfit = currentOutfits[index];
+      if (!outfit) return;
+      const items = outfitItems(outfit).map(x => x.name);
+      const now = new Date();
+      const entry = {
+        timestamp: now.toISOString(),
+        week: $('week').value || getWeekNumber(),
+        weather: $('weather').value || '',
+        wish: $('wish').value || '',
+        label: `Option ${index + 1}`,
+        signature: outfitSignature(outfit),
+        items,
+        summary: items.join(' · ')
+      };
+      choiceHistory.unshift(entry);
+      choiceHistory = choiceHistory.slice(0, 24);
+      saveChoiceHistory();
+      refreshCount++;
+      generate();
+      $('hint').innerHTML += ' <strong>Gespeichert:</strong> Dieses Outfit und seine Hauptteile werden jetzt 7 Tage möglichst gemieden.';
+    }
+
+    function renderHistory() {
+      pruneChoiceHistory();
+      const panel = $('historyPanel');
+      if (!panel) return;
+      if (!choiceHistory.length) {
+        panel.innerHTML = `<div class="history-head"><h2>Gewählte Outfits</h2><span class="smallnote">Noch nichts gespeichert.</span></div><p class="smallnote">Tipp: Nach dem Anziehen auf „Dieses Outfit gewählt“ tippen. Danach rotiert die App 7 Tage stärker.</p>`;
+        return;
+      }
+      const recent = choiceHistory.slice(0, 7).map(entry => {
+        const d = new Date(entry.timestamp);
+        const date = d.toLocaleDateString('de-DE', { weekday:'short', day:'2-digit', month:'2-digit' });
+        const shortSummary = (entry.summary || '').split(' · ').slice(0, 4).join(' · ');
+        return `<div class="history-item"><strong>${escapeHtml(date)} · KW ${escapeHtml(entry.week || '-')}</strong><br>${escapeHtml(shortSummary)}</div>`;
+      }).join('');
+      panel.innerHTML = `<div class="history-head"><h2>Gewählte Outfits</h2><button type="button" class="smallbtn secondary" id="clearHistory">Historie löschen</button></div><p class="smallnote">Aktiv: 7‑Tage‑Rotation. Exakte Kombinationen werden gesperrt, Hauptteile möglichst geschont.</p><div class="history-list">${recent}</div>`;
     }
 
     function saveWardrobeFromEditor() {
@@ -924,7 +1041,7 @@
       const perfume = outfit.perfume || perfumes[0];
       return `<article class="card">
         <h2>Option ${idx+1}: ${escapeHtml(title)}</h2>
-        <div class="badges"><span class="badge">warm genug</span><span class="badge">minimal</span><span class="badge">KW‑Rotation</span></div>
+        <div class="badges"><span class="badge">warm genug</span><span class="badge">minimal</span><span class="badge">7‑Tage‑Rotation</span></div>
         <div class="line"><div class="label">Hose</div><div class="value">${itemText(outfit.pants)}</div></div>
         <div class="line"><div class="label">Oben</div><div class="value">${topText}</div></div>
         <div class="line"><div class="label">Layer</div><div class="value">${layerText}</div></div>
@@ -933,6 +1050,7 @@
         <div class="line"><div class="label">Accessoires</div><div class="value">${acc || 'reduziert, ohne zusätzliches Accessoire'}</div></div>
         <div class="line"><div class="label">Parfum</div><div class="value">${escapeHtml(perfume.name)} – ${escapeHtml(perfume.vibe)}</div></div>
         <div class="why">${escapeHtml(colorStory([outfit.pants, outfit.tshirt, outfit.top, outfit.layer, outfit.shoes]))}</div>
+        <button type="button" class="choose primary" data-choose="${idx}">Dieses Outfit gewählt</button>
       </article>`;
     }
 
@@ -945,14 +1063,30 @@
         const temp = tempFromWeather(weather);
         const context = { weather, rain: hasRain(weather), termin: hasTermin(weather) };
         const wish = findWish(wishText);
-        const seed = hash(`${week}|${weather}|${wishText}|${refreshCount}|${wardrobe.length}`);
+        const seed = hash(`${week}|${weather}|${wishText}|${refreshCount}|${wardrobe.length}|${choiceHistory.length}`);
         const rand = rng(seed);
-        const used = [];
-        const cards = [0,1,2].map(i => chooseBase(i, rand, temp, context, wish, used));
+        const blockedSignatures = recentSignatures();
+        let used = recentAvoidNames();
+        const cards = [];
+        let safety = 0;
+        while (cards.length < 3 && safety < 40) {
+          const tempUsed = used.slice();
+          const candidate = chooseBase(cards.length, rand, temp, context, wish, tempUsed);
+          const sig = outfitSignature(candidate);
+          const exactBlocked = blockedSignatures.includes(sig);
+          if (!exactBlocked || safety > 24) {
+            cards.push(candidate);
+            used = tempUsed;
+          }
+          safety++;
+        }
+        currentOutfits = cards;
         const recognized = weather ? `Erkannt: ca. <strong>${temp} °C</strong>${context.rain ? ', Regen berücksichtigt' : ''}${context.termin ? ', Termin/Büro-Modus aus Text abgeleitet' : ''}.` : 'Keine Temperatur erkannt – die App rechnet neutral mit ca. 20 °C.';
         const wishInfo = wishText ? (wish ? `Wunschteil gefunden: <strong>${escapeHtml(wish.name)}</strong>.` : 'Wunschteil nicht eindeutig gefunden – Vorschläge trotzdem erstellt.') : 'Ohne Wunschteil erstellt.';
-        $('hint').innerHTML = `${recognized} ${wishInfo}`;
+        const rotationInfo = choiceHistory.length ? `Rotation aktiv: <strong>${choiceHistory.length}</strong> gewählte Outfit${choiceHistory.length === 1 ? '' : 's'} in den letzten 7 Tagen werden berücksichtigt.` : 'Noch keine Auswahl gespeichert – Rotation startet nach dem ersten gewählten Outfit.';
+        $('hint').innerHTML = `${recognized} ${wishInfo} ${rotationInfo}`;
         $('cards').innerHTML = cards.map((c,i) => renderCard(c,i)).join('');
+        renderHistory();
       } catch (e) {
         console.error(e);
         showError('Die App ist in einen Fehler gelaufen: ' + e.message);
@@ -962,8 +1096,17 @@
     function init() {
       $('week').value = getWeekNumber();
       loadWardrobe();
+      loadChoiceHistory();
       $('generate').addEventListener('click', () => { refreshCount = 0; generate(); });
       $('refresh').addEventListener('click', () => { refreshCount++; generate(); });
+      $('cards').addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-choose]');
+        if (!btn) return;
+        markChosen(Number(btn.dataset.choose));
+      });
+      $('historyPanel').addEventListener('click', (event) => {
+        if (event.target.closest('#clearHistory')) clearChoiceHistory();
+      });
       $('saveWardrobe').addEventListener('click', saveWardrobeFromEditor);
       $('exportWardrobe').addEventListener('click', exportWardrobe);
       $('resetWardrobe').addEventListener('click', resetWardrobe);

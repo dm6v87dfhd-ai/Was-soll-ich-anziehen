@@ -1,15 +1,25 @@
-Outfit-Web-App – robuste Ein-Datei-Version
+Outfit Rotation – lokale Web-App
 
+Öffnen:
 1. ZIP entpacken.
 2. index.html öffnen.
 3. Kalenderwoche, Wetter und optional Wunschteil eingeben.
-4. „Outfits machen“ erzeugt drei Vorschläge. „Refresh“ mischt neu.
+4. „Outfits machen“ oder „Refresh“ nutzen.
 
-Fundus anpassen:
-- In der App den Bereich „Fundus bearbeiten / erweitern“ öffnen.
-- JSON bearbeiten und „Fundus übernehmen“ klicken.
-- Änderungen werden lokal im Browser gespeichert.
-- Mit „Exportieren“ kannst du eine Sicherung als outfit-fundus.json speichern.
+Neu in dieser Version:
+- Button „Dieses Outfit gewählt“ auf jeder Outfitkarte.
+- Die App speichert gewählte Outfits lokal im Browser.
+- 7-Tage-Rotation: exakte Kombinationen werden gesperrt, Hauptteile möglichst gemieden.
+- Falls der Fundus zu klein ist, fällt die App trotzdem auf passende Teile zurück, statt keine Outfits mehr zu zeigen.
+- Kleine Historie der zuletzt gewählten Outfits.
+- Button „Historie löschen“.
+- ruhigeres, moderneres Layout im Apple-Stil.
+
+Fundus bearbeiten:
+- Unten „Fundus bearbeiten / erweitern“ öffnen.
+- JSON direkt bearbeiten.
+- „Fundus übernehmen“ klicken.
+- Optional „Exportieren“ als Sicherung.
 
 Hinweis:
-Diese Version nutzt keine externen JS-Dateien mehr. Dadurch funktioniert sie zuverlässiger beim lokalen Öffnen auf Mac/iPhone.
+Alles bleibt lokal auf dem Gerät/im Browser gespeichert. Es gibt keinen Server und keine Anmeldung.
