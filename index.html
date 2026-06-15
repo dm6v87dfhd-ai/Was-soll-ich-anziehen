@@ -36,7 +36,7 @@
     .sub { max-width: 720px; color: var(--muted); font-size: 16px; line-height: 1.48; margin: 14px 0 0; }
     .panel, .history-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
     .input-panel { display: grid; gap: 14px; padding: 16px; margin-top: 16px; }
-    @media (min-width: 780px) { .input-panel { grid-template-columns: .55fr 1.25fr 1.1fr auto; align-items: end; } }
+    @media (min-width: 780px) { .input-panel { grid-template-columns: .45fr 1.05fr 1.05fr 1.05fr auto; align-items: end; } }
     label { display: grid; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 650; }
     input, textarea {
       width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 13px 13px;
@@ -87,7 +87,7 @@
     <header class="hero">
       <p class="eyebrow">Smart Casual · Kleiderschrank-Rotation</p>
       <h1>Outfit-Rotation</h1>
-      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Gewählte Outfits werden lokal gemerkt, damit die Woche nicht dauernd gleich aussieht – mit T‑Shirt-Farbe, Socken, Accessoires und Parfum.</p>
+      <p class="sub">KW, Wetter, Anlass und optional ein Wunschteil eingeben. Gewählte Outfits werden lokal gemerkt, damit die Woche nicht dauernd gleich aussieht – mit T‑Shirt-Farbe, Socken, Accessoires und Parfum.</p>
     </header>
 
     <section class="panel input-panel" aria-label="Eingabe">
@@ -96,6 +96,18 @@
       </label>
       <label>Wetter / Temperatur
         <input id="weather" type="text" placeholder="z. B. 21 Grad, Sonne/Wolken, Regen möglich" />
+      </label>
+      <label>Anlass / Kontext
+        <input id="occasion" type="text" list="occasionOptions" placeholder="z. B. Büro mit Termin, Familienausflug" />
+        <datalist id="occasionOptions">
+          <option value="Büro mit Termin in Präsenz"></option>
+          <option value="Büro ohne Termin"></option>
+          <option value="Homeoffice mit Online-Termin"></option>
+          <option value="Homeoffice ohne Termin"></option>
+          <option value="Familienausflug draußen"></option>
+          <option value="Privater Termin außerhalb"></option>
+          <option value="Abendessen / privat etwas schöner"></option>
+        </datalist>
       </label>
       <label>Wunschteil optional
         <input id="wish" type="text" placeholder="z. B. petrol Cordhemd oder leer lassen" />
@@ -717,6 +729,7 @@
     let wardrobe = [];
     let choiceHistory = [];
     let currentOutfits = [];
+    let currentContext = {};
     const HISTORY_KEY = 'outfitChoiceHistoryV1';
     const HISTORY_DAYS = 7;
 
@@ -813,6 +826,7 @@
         timestamp: now.toISOString(),
         week: $('week').value || getWeekNumber(),
         weather: $('weather').value || '',
+        occasion: $('occasion').value || '',
         wish: $('wish').value || '',
         label: `Option ${index + 1}`,
         signature: outfitSignature(outfit),
@@ -839,7 +853,7 @@
         const d = new Date(entry.timestamp);
         const date = d.toLocaleDateString('de-DE', { weekday:'short', day:'2-digit', month:'2-digit' });
         const shortSummary = (entry.summary || '').split(' · ').slice(0, 4).join(' · ');
-        return `<div class="history-item"><strong>${escapeHtml(date)} · KW ${escapeHtml(entry.week || '-')}</strong><br>${escapeHtml(shortSummary)}</div>`;
+        return `<div class="history-item"><strong>${escapeHtml(date)} · KW ${escapeHtml(entry.week || '-')}</strong>${entry.occasion ? ` · ${escapeHtml(entry.occasion)}` : ''}<br>${escapeHtml(shortSummary)}</div>`;
       }).join('');
       panel.innerHTML = `<div class="history-head"><h2>Gewählte Outfits</h2><button type="button" class="smallbtn secondary" id="clearHistory">Historie löschen</button></div><p class="smallnote">Aktiv: 7‑Tage‑Rotation. Exakte Kombinationen werden gesperrt, Hauptteile möglichst geschont.</p><div class="history-list">${recent}</div>`;
     }
@@ -902,12 +916,35 @@
     function clean(str) { return String(str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
     function tempFromWeather(txt) { const m = String(txt || '').match(/-?\d+/); return m ? parseInt(m[0], 10) : 20; }
     function hasRain(txt) { return /regen|schauer|nass|gewitter|niesel/i.test(txt || ''); }
-    function hasTermin(txt) { return /büro|buero|termin|meeting|praesenz|präsenz|kunde|intern/i.test(txt || ''); }
+    function hasTermin(txt) { return /termin|meeting|besprechung|praesenz|präsenz|kunde|intern|jf|jour fixe|workshop/i.test(txt || ''); }
     function weatherMode(temp) { if (temp <= 8) return 'cold'; if (temp <= 16) return 'cool'; if (temp <= 22) return 'mild'; return 'warm'; }
+
+    function occasionMode(text) {
+      const t = clean(text);
+      const office = /buero|buro|büro|arbeit|dienst|amt|praesenz|präsenz/.test(t);
+      const meeting = /termin|meeting|besprechung|kunde|intern|praesenz|präsenz|workshop|jf|jour/.test(t);
+      const homeoffice = /homeoffice|remote|online|zu hause|zuhause/.test(t);
+      const family = /familie|familien|kind|kita|ausflug|spielplatz|wochenende/.test(t);
+      const outdoor = /ausflug|draussen|draußen|spazier|spielplatz|garten|stadt|unterwegs|ausserhalb|außerhalb/.test(t);
+      const privateEvent = /privat|abend|essen|restaurant|date|feier|geburtstag/.test(t);
+      let tone = 'anlass-neutral';
+      let formality = 0;
+      if (office && meeting) { tone = 'Büro + Termin'; formality = 3; }
+      else if (office) { tone = 'Büro'; formality = 2; }
+      else if (homeoffice && meeting) { tone = 'Homeoffice + Online-Termin'; formality = 1.5; }
+      else if (homeoffice) { tone = 'Homeoffice'; formality = 1; }
+      else if (family && outdoor) { tone = 'Familienausflug'; formality = 0; }
+      else if (family) { tone = 'Familie / privat'; formality = 0; }
+      else if (privateEvent) { tone = 'privat etwas schöner'; formality = 1.5; }
+      return { raw: text || '', office, meeting, homeoffice, family, outdoor, privateEvent, tone, formality };
+    }
 
     function itemIsOkay(item, temp, context) {
       if (!item) return false;
       if (context.termin && item.avoidFor && clean(item.avoidFor).includes('termin')) return false;
+      if ((context.family || context.outdoor) && item.category === 'Blazer') return false;
+      if (context.meeting && /off-white\/pinke Batikjeans/i.test(item.name)) return false;
+      if (context.meeting && item.category === 'Kappe') return false;
       if (item.name === 'blauer Strickkapuzenpullover' && temp > 10 && !/winter|kalt|herbst/i.test(context.weather)) return false;
       return true;
     }
@@ -929,6 +966,34 @@
       const strict = byCat(cat).filter(x => warmthAllowed(x, temp, context));
       if (strict.length) return strict;
       return byCat(cat).filter(x => itemIsOkay(x, temp, context));
+    }
+
+    function preferredForOccasion(list, cat, context) {
+      if (!list || !list.length) return list;
+      let preferred = [];
+      if (context.meeting || context.formality >= 3) {
+        if (cat === 'Hose') preferred = list.filter(x => /Stoffhose|Corthose|Leinenhose/i.test(x.name) && !/Batikjeans/i.test(x.name));
+        if (cat === 'Hemd') preferred = list.filter(x => x.formality === 'business' || /hellblaues Hemd|weißes Hemd|blau weiß gestreiftes Hemd/i.test(x.name));
+        if (cat === 'Schuhe') preferred = list.filter(x => /Lederschuhe|schwarze Adidas|weiße Sneaker/i.test(x.name));
+        if (['Overshirt','Blazer','Cardigan','Jacke','Weste'].includes(cat)) preferred = list.filter(x => !/französische Arbeitsjacke|Daunenjacke/i.test(x.name));
+      } else if (context.office) {
+        if (cat === 'Hose') preferred = list.filter(x => /Stoffhose|Corthose|Leinenhose|Jeans/i.test(x.name) && !/Batikjeans/i.test(x.name));
+        if (cat === 'Schuhe') preferred = list.filter(x => /Lederschuhe|schwarze Adidas|weiße Sneaker|dunkelgrüne Sneaker/i.test(x.name));
+      } else if (context.homeoffice) {
+        if (['Pullover','Longsleeve','Tshirt','Overshirt','Cardigan'].includes(cat)) preferred = list;
+        if (cat === 'Schuhe') preferred = list.filter(x => /Sneaker|Gazelle/i.test(x.name));
+      } else if (context.family || context.outdoor) {
+        if (cat === 'Hose') preferred = list.filter(x => /Jeans|Corthose|Stoffhose|Leinenhose/i.test(x.name));
+        if (cat === 'Schuhe') preferred = list.filter(x => /Sneaker|Gazelle/i.test(x.name));
+        if (['Overshirt','Jacke','Cardigan','Weste'].includes(cat)) preferred = list.filter(x => !/Blazer/i.test(x.category));
+      } else if (context.privateEvent) {
+        if (cat === 'Schuhe') preferred = list.filter(x => /Lederschuhe|schwarze Adidas|weiße Sneaker/i.test(x.name));
+      }
+      return preferred.length ? preferred : list;
+    }
+
+    function contextual(cat, temp, context) {
+      return preferredForOccasion(filtered(cat, temp, context), cat, context);
     }
 
     function pick(list, rand, avoidNames = []) {
@@ -969,6 +1034,13 @@
         if (mode === 'mild') return p.temp !== 'warm';
         return p.temp === 'cool' || p.temp === 'mild';
       });
+      if (context.meeting || context.office) {
+        const officePool = pool.filter(p => /Carthusia Uomo|Blue Suede Shoes|Bleu de Chanel|Essence of the Park|Ginepro Nero/i.test(p.name));
+        if (officePool.length) pool = officePool;
+      } else if (context.family || context.outdoor) {
+        const easyPool = pool.filter(p => /Essence of the Park|Ginepro Nero|Eau Givrée|Boss Bottled/i.test(p.name));
+        if (easyPool.length) pool = easyPool;
+      }
       if (context.termin) pool = pool.filter(p => !p.name.includes('Terra Mia') || temp <= 14);
       return pick(pool.length ? pool : perfumes, rand) || perfumes[0];
     }
@@ -978,8 +1050,8 @@
       const wishCat = wish ? wish.category : '';
       const outfit = { pants:null, tshirt:null, top:null, layer:null, shoes:null, head:null, scarf:null, watch:null, perfume:null };
 
-      outfit.pants = wishCat === 'Hose' ? wish : pick(filtered('Hose', temp, context), rand, used);
-      outfit.tshirt = wishCat === 'Tshirt' ? wish : pick(filtered('Tshirt', temp, context), rand, used);
+      outfit.pants = wishCat === 'Hose' ? wish : pick(contextual('Hose', temp, context), rand, used);
+      outfit.tshirt = wishCat === 'Tshirt' ? wish : pick(contextual('Tshirt', temp, context), rand, used);
 
       if (['Hemd','Pullover','Longsleeve'].includes(wishCat)) outfit.top = wish;
       if (['Overshirt','Blazer','Cardigan','Weste','Jacke'].includes(wishCat)) outfit.layer = wish;
@@ -987,24 +1059,44 @@
 
       if (!outfit.top) {
         let templateCats;
-        if (mode === 'warm') templateCats = i === 2 ? ['Hemd','Tshirt'] : ['Tshirt','Hemd'];
+        if (context.meeting) {
+          templateCats = mode === 'warm' ? ['Hemd','Tshirt'] : ['Hemd','Longsleeve','Pullover'];
+        } else if (context.office) {
+          templateCats = mode === 'warm' ? ['Tshirt','Hemd'] : ['Longsleeve','Hemd','Pullover'];
+        } else if (context.homeoffice) {
+          templateCats = mode === 'warm' ? ['Tshirt'] : ['Longsleeve','Pullover','Tshirt'];
+        } else if (context.family || context.outdoor) {
+          templateCats = mode === 'warm' ? ['Tshirt','Hemd'] : ['Longsleeve','Tshirt','Pullover'];
+        } else if (mode === 'warm') templateCats = i === 2 ? ['Hemd','Tshirt'] : ['Tshirt','Hemd'];
         else if (mode === 'mild') templateCats = i === 0 ? ['Tshirt','Longsleeve'] : i === 1 ? ['Longsleeve','Tshirt'] : ['Hemd','Tshirt'];
         else templateCats = i === 0 ? ['Longsleeve','Pullover'] : i === 1 ? ['Pullover','Longsleeve'] : ['Hemd','Longsleeve'];
         const cat = templateCats[Math.floor(rand() * templateCats.length)];
-        outfit.top = cat === 'Tshirt' ? outfit.tshirt : pick(filtered(cat, temp, context), rand, used);
+        outfit.top = cat === 'Tshirt' ? outfit.tshirt : pick(contextual(cat, temp, context), rand, used);
       }
 
       if (outfit.top && outfit.top.category === 'Tshirt') outfit.tshirt = outfit.top;
-      if (!outfit.tshirt) outfit.tshirt = pick(filtered('Tshirt', temp, context), rand, used) || pick(byCat('Tshirt'), rand, []);
+      if (!outfit.tshirt) outfit.tshirt = pick(contextual('Tshirt', temp, context), rand, used) || pick(byCat('Tshirt'), rand, []);
 
       if (!outfit.layer) {
         let layerCats;
-        if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt'];
+        if (context.meeting) {
+          if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Blazer','Overshirt'];
+          else if (temp >= 18) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Blazer','Overshirt','Jacke'];
+          else layerCats = ['Blazer','Cardigan','Overshirt','Jacke'];
+        } else if (context.office || context.privateEvent) {
+          if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt','Blazer'];
+          else if (temp >= 18) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt','Blazer','Jacke'];
+          else layerCats = ['Overshirt','Cardigan','Blazer','Weste','Jacke'];
+        } else if (context.family || context.outdoor) {
+          if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt'];
+          else if (temp >= 18) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt','Jacke'];
+          else layerCats = ['Overshirt','Cardigan','Weste','Jacke'];
+        } else if (temp >= 24) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt'];
         else if (temp >= 18) layerCats = context.rain ? ['Jacke','Overshirt'] : ['Overshirt','Jacke'];
         else if (temp >= 11) layerCats = ['Overshirt','Cardigan','Blazer','Weste','Jacke'];
         else layerCats = ['Cardigan','Blazer','Weste','Jacke'];
         const cat = layerCats[(i + Math.floor(rand()*layerCats.length)) % layerCats.length];
-        outfit.layer = pick(filtered(cat, temp, context), rand, used);
+        outfit.layer = pick(contextual(cat, temp, context), rand, used);
       }
 
       if (context.rain) {
@@ -1014,9 +1106,9 @@
         outfit.layerNote = 'nur draußen als Außenlage gedacht';
       }
 
-      outfit.shoes = outfit.shoes || pick(byCat('Schuhe'), rand, used);
-      outfit.head = temp <= 10 ? pick(byCat('Mütze'), rand) : pick(byCat('Kappe'), rand);
-      outfit.scarf = temp <= 14 ? pick(filtered('Schal', temp, context), rand) : null;
+      outfit.shoes = outfit.shoes || pick(contextual('Schuhe', temp, context), rand, used);
+      outfit.head = temp <= 10 ? pick(byCat('Mütze'), rand) : ((context.office || context.meeting) ? null : pick(byCat('Kappe'), rand));
+      outfit.scarf = temp <= 14 ? pick(contextual('Schal', temp, context), rand) : null;
       outfit.watch = pick(byCat('Uhr'), rand);
       outfit.perfume = perfumeFor(temp, rand, context);
 
@@ -1041,7 +1133,7 @@
       const perfume = outfit.perfume || perfumes[0];
       return `<article class="card">
         <h2>Option ${idx+1}: ${escapeHtml(title)}</h2>
-        <div class="badges"><span class="badge">warm genug</span><span class="badge">minimal</span><span class="badge">7‑Tage‑Rotation</span></div>
+        <div class="badges"><span class="badge">warm genug</span><span class="badge">minimal</span><span class="badge">${escapeHtml(currentContext.tone || 'anlass-neutral')}</span><span class="badge">7‑Tage‑Rotation</span></div>
         <div class="line"><div class="label">Hose</div><div class="value">${itemText(outfit.pants)}</div></div>
         <div class="line"><div class="label">Oben</div><div class="value">${topText}</div></div>
         <div class="line"><div class="label">Layer</div><div class="value">${layerText}</div></div>
@@ -1059,11 +1151,14 @@
         showError('');
         const week = $('week').value || getWeekNumber();
         const weather = $('weather').value || '';
+        const occasionText = $('occasion').value || '';
         const wishText = $('wish').value || '';
         const temp = tempFromWeather(weather);
-        const context = { weather, rain: hasRain(weather), termin: hasTermin(weather) };
+        const occ = occasionMode(occasionText);
+        const context = { weather, occasion: occasionText, rain: hasRain(weather), ...occ, termin: hasTermin(weather) || occ.meeting };
+        currentContext = context;
         const wish = findWish(wishText);
-        const seed = hash(`${week}|${weather}|${wishText}|${refreshCount}|${wardrobe.length}|${choiceHistory.length}`);
+        const seed = hash(`${week}|${weather}|${occasionText}|${wishText}|${refreshCount}|${wardrobe.length}|${choiceHistory.length}`);
         const rand = rng(seed);
         const blockedSignatures = recentSignatures();
         let used = recentAvoidNames();
@@ -1081,7 +1176,7 @@
           safety++;
         }
         currentOutfits = cards;
-        const recognized = weather ? `Erkannt: ca. <strong>${temp} °C</strong>${context.rain ? ', Regen berücksichtigt' : ''}${context.termin ? ', Termin/Büro-Modus aus Text abgeleitet' : ''}.` : 'Keine Temperatur erkannt – die App rechnet neutral mit ca. 20 °C.';
+        const recognized = weather ? `Erkannt: ca. <strong>${temp} °C</strong>${context.rain ? ', Regen berücksichtigt' : ''}${occasionText ? `, Anlass: <strong>${escapeHtml(context.tone)}</strong>` : ', kein Anlass eingetragen'}.` : `Keine Temperatur erkannt – die App rechnet neutral mit ca. 20 °C${occasionText ? `, Anlass: <strong>${escapeHtml(context.tone)}</strong>` : ''}.`;
         const wishInfo = wishText ? (wish ? `Wunschteil gefunden: <strong>${escapeHtml(wish.name)}</strong>.` : 'Wunschteil nicht eindeutig gefunden – Vorschläge trotzdem erstellt.') : 'Ohne Wunschteil erstellt.';
         const rotationInfo = choiceHistory.length ? `Rotation aktiv: <strong>${choiceHistory.length}</strong> gewählte Outfit${choiceHistory.length === 1 ? '' : 's'} in den letzten 7 Tagen werden berücksichtigt.` : 'Noch keine Auswahl gespeichert – Rotation startet nach dem ersten gewählten Outfit.';
         $('hint').innerHTML = `${recognized} ${wishInfo} ${rotationInfo}`;
