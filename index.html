@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Outfit-Rotation</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <p class="eyebrow">Smart Casual · Kleiderschrank-Rotation</p>
+      <h1>Outfit-Rotation</h1>
+      <p class="sub">KW, Wetter und optional ein Wunschteil eingeben. Die App schlägt drei ruhige Outfits aus deinem Fundus vor.</p>
+    </header>
+
+    <section class="panel input-panel" aria-label="Eingabe">
+      <label>
+        Kalenderwoche
+        <input id="week" type="number" min="1" max="53" inputmode="numeric" placeholder="z. B. 25" />
+      </label>
+      <label>
+        Wetter / Temperatur
+        <input id="weather" type="text" placeholder="z. B. 21 Grad, Sonne/Wolken, Regen möglich" />
+      </label>
+      <label>
+        Wunschteil optional
+        <input id="wish" type="text" placeholder="z. B. petrol Cordhemd oder leer lassen" />
+      </label>
+      <div class="button-row">
+        <button id="generate">Outfits machen</button>
+        <button id="refresh" class="secondary">Refresh</button>
+      </div>
+    </section>
+
+    <section class="hint" id="hint"></section>
+    <section class="cards" id="cards" aria-live="polite"></section>
+
+    <details class="panel small">
+      <summary>Fundus am Mac anpassen</summary>
+      <p>Öffne die Datei <strong>wardrobe.js</strong> im gleichen Ordner. Neue Teile einfach nach dem vorhandenen Muster ergänzen. Teile, die nicht genutzt werden sollen, mit <code>active:false</code> deaktivieren.</p>
+    </details>
+  </main>
+  <script src="wardrobe.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
